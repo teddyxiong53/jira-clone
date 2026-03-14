@@ -7,7 +7,7 @@
           <path d="M8 10h6v12H8V10z" fill="white"/>
           <path d="M16 10h6v12h-6V10z" fill="white" opacity="0.7"/>
         </svg>
-        <span class="font-semibold text-atlassian-neutral-100 text-sm">Project Name</span>
+        <span class="font-semibold text-atlassian-neutral-100 text-sm">My Projects</span>
         <ChevronDown class="w-4 h-4 text-atlassian-neutral-70" />
       </div>
     </div>
@@ -26,12 +26,32 @@
       </div>
     </div>
 
-    <div class="flex items-center gap-1">
-      <button class="flex items-center gap-1.5 h-7 px-2 bg-atlassian-blue-400 text-white text-sm font-medium rounded hover:bg-atlassian-blue-500 transition-colors">
+    <div class="flex items-center gap-1 relative">
+      <button 
+        class="flex items-center gap-1.5 h-7 px-2 bg-atlassian-blue-400 text-white text-sm font-medium rounded hover:bg-atlassian-blue-500 transition-colors"
+        @click="showCreateMenu = !showCreateMenu"
+      >
         <Plus class="w-4 h-4" />
         <span>Create</span>
         <ChevronDown class="w-3 h-3" />
       </button>
+      
+      <div v-if="showCreateMenu" class="absolute right-0 top-8 bg-atlassian-neutral-0 border border-atlassian-neutral-20 rounded shadow-jira-card py-1 z-50 min-w-[160px]">
+        <button 
+          class="w-full px-4 py-2 text-left text-sm text-atlassian-neutral-100 hover:bg-atlassian-neutral-10 flex items-center gap-2"
+          @click="openCreateIssue"
+        >
+          <span class="w-5 h-5 bg-atlassian-blue-400 rounded flex items-center justify-center text-white text-xs">T</span>
+          Create Issue
+        </button>
+        <button 
+          class="w-full px-4 py-2 text-left text-sm text-atlassian-neutral-70 hover:bg-atlassian-neutral-10 flex items-center gap-2"
+          disabled
+        >
+          <span class="w-5 h-5 bg-atlassian-neutral-40 rounded flex items-center justify-center text-white text-xs">P</span>
+          Create Project
+        </button>
+      </div>
       
       <button class="relative p-1.5 text-atlassian-neutral-70 hover:bg-atlassian-neutral-10 rounded transition-colors">
         <Bell class="w-5 h-5" />
@@ -57,6 +77,8 @@
       </div>
     </div>
   </header>
+  
+  <CreateIssueModal v-if="showCreateModal" @close="showCreateModal = false" @created="handleIssueCreated" />
 </template>
 
 <script setup lang="ts">
@@ -65,12 +87,16 @@ import { useRouter } from 'vue-router'
 import { Search, ChevronDown, Plus, Bell, HelpCircle } from 'lucide-vue-next'
 import { useUiStore } from '../../stores/ui'
 import { useAuthStore } from '../../stores/auth'
+import CreateIssueModal from '../modal/CreateIssueModal.vue'
 
 const router = useRouter()
 const uiStore = useUiStore()
 const authStore = useAuthStore()
+
 const searchQuery = ref('')
 const showUserMenu = ref(false)
+const showCreateMenu = ref(false)
+const showCreateModal = ref(false)
 
 const handleSearch = (e: Event) => {
   const target = e.target as HTMLInputElement
@@ -81,5 +107,14 @@ const handleLogout = () => {
   authStore.logout()
   showUserMenu.value = false
   router.push('/login')
+}
+
+const openCreateIssue = () => {
+  showCreateMenu.value = false
+  showCreateModal.value = true
+}
+
+const handleIssueCreated = () => {
+  showCreateModal.value = false
 }
 </script>
