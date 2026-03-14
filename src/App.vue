@@ -12,10 +12,17 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import TopNav from './components/layout/TopNav.vue'
 import SideNav from './components/layout/SideNav.vue'
 import IssueModal from './components/modal/IssueModal.vue'
 import { useUiStore } from './stores/ui'
+import { useIssueStore } from './stores/issues'
 
 const uiStore = useUiStore()
+const issueStore = useIssueStore()
+
+onMounted(async () => {
+  await Promise.all([issueStore.fetchIssues(), issueStore.fetchUsers()])
+})
 </script>
