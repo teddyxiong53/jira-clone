@@ -189,5 +189,57 @@ def get_users():
     return jsonify([user.to_dict() for user in users])
 
 
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    data = request.json
+    name = data.get('name')
+    email = data.get('email')
+    password = data.get('password')
+    
+    if not name or not email or not password:
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    existing = session.query(User).filter_by(email=email).first()
+    if existing:
+        return jsonify({'error': 'Email already registered'}), 400
+    
+    user = User(
+        name=name,
+        email=email,
+        avatar=f'https://i.pravatar.cc/150?u={email}'
+    )
+    session.add(user)
+    session.commit()
+    return jsonify(user.to_dict()), 201
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    
+    if not email:
+        return jsonify({'error': 'Email required'}), 400
+    
+    user = session.query(User).filter_by(email=email).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    return jsonify(user.to_dict())
+
+
+@app.route('/api/auth/me', methods=['GET'])
+def get_current_user():
+    user_id = request.headers.get('X-User-Id')
+    if not user_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    user = session.query(User).get(int(user_id))
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    return jsonify(user.to_dict())
+
+
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

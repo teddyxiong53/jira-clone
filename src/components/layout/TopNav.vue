@@ -42,8 +42,18 @@
         <HelpCircle class="w-5 h-5" />
       </button>
       
-      <div class="ml-2 flex items-center gap-2 cursor-pointer hover:bg-atlassian-neutral-10 px-1.5 py-1 rounded">
-        <img src="https://i.pravatar.cc/150?img=1" alt="User" class="w-6 h-6 rounded-full" />
+      <div class="ml-2 flex items-center gap-2 cursor-pointer hover:bg-atlassian-neutral-10 px-1.5 py-1 rounded" @click="showUserMenu = !showUserMenu">
+        <img v-if="authStore.user" :src="authStore.user.avatar" alt="User" class="w-6 h-6 rounded-full" />
+        <span v-if="authStore.user" class="text-sm text-atlassian-neutral-100">{{ authStore.user.name }}</span>
+      </div>
+      
+      <div v-if="showUserMenu" class="absolute right-3 top-10 bg-atlassian-neutral-0 border border-atlassian-neutral-20 rounded shadow-jira-card py-1 z-50">
+        <button 
+          class="w-full px-4 py-2 text-left text-sm text-atlassian-neutral-100 hover:bg-atlassian-neutral-10"
+          @click="handleLogout"
+        >
+          Log out
+        </button>
       </div>
     </div>
   </header>
@@ -51,14 +61,25 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { Search, ChevronDown, Plus, Bell, HelpCircle } from 'lucide-vue-next'
 import { useUiStore } from '../../stores/ui'
+import { useAuthStore } from '../../stores/auth'
 
+const router = useRouter()
 const uiStore = useUiStore()
+const authStore = useAuthStore()
 const searchQuery = ref('')
+const showUserMenu = ref(false)
 
 const handleSearch = (e: Event) => {
   const target = e.target as HTMLInputElement
   uiStore.setSearchQuery(target.value)
+}
+
+const handleLogout = () => {
+  authStore.logout()
+  showUserMenu.value = false
+  router.push('/login')
 }
 </script>
